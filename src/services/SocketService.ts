@@ -6,7 +6,7 @@ class SocketService {
   private currentUserId: string | null = null;
 
   connect(token: string, userId: string) {
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+    const socketUrl = import.meta.env.VITE_SOCKET_URL ||'https://quizarena.up.railway.app/' ;
     
     this.currentUserId = userId;
     

@@ -122,6 +122,14 @@ fetchAchievements();
     const isWinner = game.winner === user?.id;
     return isWinner ? 'text-green-400' : 'text-red-400';
   };
+  const handleJoinPublicRoom = async (roomCode:string)=>{
+    try{
+        await roomService.joinRoom(roomCode);
+        navigate(`/room/${roomCode}`);
+    }catch(err:any){
+      alert(`Error joining room ${err.message}`)
+    }
+  }
 
   const getResultText = (game: RecentGame) => {
     const isWinner = game.winner === user?.id;
@@ -357,7 +365,7 @@ fetchAchievements();
                     <div
                       key={room._id}
                       className="p-4 bg-slate-800/50 rounded-xl border border-white/10 hover:border-purple-500/50 transition-all group cursor-pointer"
-                      onClick={() => navigate(`/room/${room.roomCode}`)}
+                      onClick={() => handleJoinPublicRoom(room.roomCode)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
