@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/AuthStores';
 import { authService } from '../services/AuthServices';
 import { gameService } from '../services/GameServices';
 import Navbar from '../components/Navbar';
+import { AchievmentService } from '../services/AchievementService';
 import {
   Trophy,
   Target,
@@ -14,7 +15,6 @@ import {
   Crown,
   Shield,
   Flame,
-  Award,
   Calendar,
   Activity,
   Loader2,
@@ -24,7 +24,8 @@ import {
   Camera,
   Settings as SettingsIcon,
   LogOut,
-  Upload
+  Upload,
+  Sparkles
 } from 'lucide-react';
 
 interface UserProfile {
@@ -52,12 +53,19 @@ interface UserProfile {
     total: number;
   };
 }
+interface Achievement {
+  _id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlockedAt: string;
+}
 
 const ProfilePage = () => {
   const { userId } = useParams<{ userId?: string }>();
   const navigate = useNavigate();
   const { user: currentUser, logout } = useAuthStore();
-  
+  const [recentAchievements, setRecentAchievements] = useState<Achievement[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -66,6 +74,7 @@ const ProfilePage = () => {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const isOwnProfile = !userId || userId === currentUser?.id;
   const profileUserId = userId || currentUser?.id;
@@ -82,7 +91,25 @@ const ProfilePage = () => {
     { id: 'pixel-art', name: 'Pixel Art', emoji: '👾' },
   ];
 
-  useEffect(() => {
+  
+  useEffect(()=>{
+     fetchAchievements();
+  
+
+  },[]);
+
+  const fetchAchievements = async () => {
+    try{
+      const achievements = await AchievmentService.getUserAchievements();
+      console.log(achievements);
+      
+      setRecentAchievements(achievements);
+    }catch(err){
+       console.error('Error fetching achievements:', err);
+    };
+  }
+
+useEffect(() => {
   if (profileUserId && currentUser) {
     fetchProfile(profileUserId);
   }
@@ -647,20 +674,43 @@ const ProfilePage = () => {
 
             {/* Achievements Preview */}
             <div className="glass rounded-2xl p-6 border border-white/20 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-black text-white flex items-center gap-2">
-                  <Award className="w-5 h-5 text-yellow-400" />
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-black text-white flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-yellow-400" />
                   Achievements
-                </h3>
+                </h2>
                 <button className="text-yellow-400 hover:text-yellow-300 text-sm font-semibold">
                   View All →
                 </button>
               </div>
 
-              <div className="text-center py-8 text-white/50">
-                <Trophy className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Play games to unlock achievements!</p>
-              </div>
+              {recentAchievements.length === 0 ? (
+                <div className="text-center py-8 text-white/50">
+                  <Trophy className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">Play games to unlock achievements!</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentAchievements.map((achievement) => (
+                    <div
+                      key={achievement._id}
+                      className="p-4 bg-slate-800/50 rounded-xl border border-white/10 hover:scale-105 transition-all"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="text-3xl">{achievement.icon}</div>
+                        <div className="flex-1">
+                          <div className="font-bold text-white text-sm">
+                            {achievement.title}
+                          </div>
+                          <div className="text-xs text-white/50">
+                            {achievement.description}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Battle Record */}
@@ -696,6 +746,7 @@ const ProfilePage = () => {
       </div>
     </div>
   );
+  
 };
 
 export default ProfilePage;

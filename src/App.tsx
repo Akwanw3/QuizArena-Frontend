@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/AuthStores';
 import Footer from './components/Footer';
+import { useEffect } from 'react';
+import { socketService } from './services/SocketService';
 
 
 // Pages (we'll create these next)
@@ -24,6 +26,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
+  useEffect(()=>{
+    const token = localStorage.getItem('token');
+    const Storeduser = localStorage.getItem('user');
+    //
+    const user = Storeduser? JSON.parse(Storeduser): null;
+    const userId = user?.id
+
+    if(token && userId){
+      socketService.connect(token, userId);
+    }
+    return ()=>{
+      // Do not disconnect on page change - only when app unmounts
+      socketService.disconnect();
+    }
+  },[])
   return (
     <div className="min-h-screen">
       <Routes>

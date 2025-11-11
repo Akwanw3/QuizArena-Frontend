@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/AuthStores';
-import Arena from '../assets/Arena2.mp4';
+import Arena from '../assets/Arena.mp4';
 
 import { 
   Trophy, 

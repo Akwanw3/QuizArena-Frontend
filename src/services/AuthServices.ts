@@ -1,5 +1,5 @@
 import api from './Api';
-import type { ApiResponse, AuthResponse, LoginForm, RegisterForm } from '../types/Index';
+import type { ApiResponse, AuthResponse, LoginForm, RegisterForm,UserStats } from '../types/Index';
 
 export const authService = {
   // Register new user
@@ -27,10 +27,10 @@ export const authService = {
   },
 
   // Get user stats
-  getStats: async () => {
-    const response = await api.get('/auth/stats');
-    return response.data.data;
-  },
+ getStats: async (): Promise<UserStats> => {
+  const response = await api.get<ApiResponse<UserStats>>('/auth/stats');
+  return response.data.data!;
+},
 
   // Change password
   changePassword: async (data: { currentPassword: string; newPassword: string }) => {

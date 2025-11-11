@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/AuthStores';
+import { authService } from '../services/AuthServices';
 import { roomService } from '../services/RoomServices';
 import { gameService } from '../services/GameServices';
+import { AchievmentService } from '../services/AchievementService';
 import Navbar from '../components/Navbar';
 
 import {
@@ -22,6 +24,7 @@ import {
   Crown,
   Shield,
 } from 'lucide-react';
+
 
 interface PublicRoom {
   _id: string;
@@ -50,7 +53,7 @@ interface Achievement {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user,  } = useAuthStore();
   const [roomCode, setRoomCode] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [publicRooms, setPublicRooms] = useState<PublicRoom[]>([]);
@@ -60,12 +63,28 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchData();
+fetchAchievements();
+
   }, []);
+
+  const fetchAchievements = async () => {
+    try {
+      const achievements = await AchievmentService.getUserAchievements();
+      console.log(achievements); // should log an array of achievements
+      setRecentAchievements(achievements);
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+    }
+  };
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      
+
+      // Fetch stats first
+    const statsData = await authService.getStats();
+    console.log(statsData);
+          
       // Fetch public rooms
       const roomsData = await roomService.getPublicRooms({ status: 'waiting' });
       setPublicRooms(roomsData.rooms.slice(0, 5));
@@ -73,10 +92,6 @@ const HomePage = () => {
       // Fetch recent games
       const gamesData = await gameService.getGameHistory(5);
       setRecentGames(gamesData.games);
-
-      // TODO: Fetch recent achievements when we create the endpoint
-      // For now, mock data
-      setRecentAchievements([]);
       
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -139,57 +154,55 @@ const HomePage = () => {
               Ready to dominate the arena?
             </p>
           </div>
+{/* Quick Actions */}
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto px-4 sm:px-0">
+  {/* Quick Play Button */}
+  <button
+    onClick={handleQuickPlay}
+    className="group relative p-6 sm:p-8 glass rounded-2xl border border-white/20 hover:border-primary-500/50 transition-all duration-300 hover:scale-105 overflow-hidden"
+  >
+    <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+    <div className="relative z-10 flex flex-col items-center text-center">
+      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-2xl">
+        <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+      </div>
+      <h3 className="text-xl sm:text-2xl font-black text-white mb-1 sm:mb-2">Quick Play</h3>
+      <p className="text-white/60 text-sm mb-3 sm:mb-4">Jump into a random battle</p>
+      <div className="flex items-center gap-2 text-primary-400 font-semibold">
+        <span>Let's Go</span>
+        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-2 transition-transform" />
+      </div>
+    </div>
+  </button>
 
-          {/* Quick Actions */}
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            
-            {/* Quick Play Button */}
-            <button
-              onClick={handleQuickPlay}
-              className="group relative p-8 glass rounded-2xl border border-white/20 hover:border-primary-500/50 transition-all duration-300 hover:scale-105 overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-2xl">
-                  <Zap className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-black text-white mb-2">Quick Play</h3>
-                <p className="text-white/60 text-sm mb-4">Jump into a random battle</p>
-                <div className="flex items-center gap-2 text-primary-400 font-semibold">
-                  <span>Let's Go</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                </div>
-              </div>
-            </button>
+  {/* Join with Code */}
+  <div className="p-6 sm:p-8 glass rounded-2xl border border-white/20 flex flex-col items-center text-center">
+    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mb-3 sm:mb-4 shadow-2xl">
+      <Hash className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+    </div>
+    <h3 className="text-xl sm:text-2xl font-black text-white mb-1 sm:mb-2">Join with Code</h3>
+    <p className="text-white/60 text-sm mb-3 sm:mb-4">Enter a room code</p>
+    
+    <div className="w-full flex flex-col sm:flex-row gap-2">
+      <input
+        type="text"
+        placeholder="ROOM CODE"
+        value={roomCode}
+        onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+        maxLength={6}
+        className="flex-1 px-4 py-3 bg-slate-800/50 border border-white/20 rounded-lg text-white text-center text-lg font-bold uppercase placeholder-white/30 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+      />
+      <button
+        onClick={handleJoinRoom}
+        disabled={!roomCode.trim() || isJoining}
+        className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-600 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-orange-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+      >
+        {isJoining ? <Loader2 className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6" />}
+      </button>
+    </div>
+  </div>
+</div>
 
-            {/* Join with Code */}
-            <div className="p-8 glass rounded-2xl border border-white/20">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mb-4 shadow-2xl">
-                  <Hash className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-black text-white mb-2">Join with Code</h3>
-                <p className="text-white/60 text-sm mb-4">Enter a room code</p>
-                
-                <div className="w-full flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="ROOM CODE"
-                    value={roomCode}
-                    onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                    maxLength={6}
-                    className="flex-1 px-4 py-3 bg-slate-800/50 border border-white/20 rounded-lg text-white text-center text-lg font-bold uppercase placeholder-white/30 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
-                  />
-                  <button
-                    onClick={handleJoinRoom}
-                    disabled={!roomCode.trim() || isJoining}
-                    className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-600 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-orange-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isJoining ? <Loader2 className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6" />}
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -201,7 +214,7 @@ const HomePage = () => {
               <TrendingUp className="w-5 h-5 text-green-400" />
             </div>
             <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              {user?.stats.gamesPlayed || 0}
+              {user?.stats.gamesPlayed }
             </div>
             <div className="text-sm text-white/60 font-semibold">Games Played</div>
           </div>
@@ -212,7 +225,7 @@ const HomePage = () => {
               <Crown className="w-5 h-5 text-orange-400" />
             </div>
             <div className="text-3xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-              {user?.stats.wins || 0}
+              {user?.stats.wins }
             </div>
             <div className="text-sm text-white/60 font-semibold">Victories</div>
           </div>
@@ -223,7 +236,7 @@ const HomePage = () => {
               <Sparkles className="w-5 h-5 text-pink-400" />
             </div>
             <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              {user?.stats.winRate?.toFixed(1) || 0}%
+              {user?.stats.winRate?.toFixed(1)}%
             </div>
             <div className="text-sm text-white/60 font-semibold">Win Rate</div>
           </div>
@@ -234,7 +247,7 @@ const HomePage = () => {
               <Shield className="w-5 h-5 text-emerald-400" />
             </div>
             <div className="text-3xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-              {user?.stats.totalPoints?.toLocaleString() || 0}
+              {user?.stats.totalPoints?.toLocaleString()}
             </div>
             <div className="text-sm text-white/60 font-semibold">Total Points</div>
           </div>
@@ -492,8 +505,6 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-       
-    </div>
   );
 };
 export default HomePage;

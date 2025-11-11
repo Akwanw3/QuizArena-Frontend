@@ -414,8 +414,8 @@ const SettingsPage = () => {
                   <div className="font-semibold text-white">Your email is verified</div>
                 ) : (
                   <div className='mt-2 text-sm text-red-400 font-bold'>
-                    Please verify your Email to access our services
-                    <button className='ml-2 text-sm text-blue-400 font-semibold bg-red-600 w-full py-3  rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2' onClick={() => navigate(`/verify-email`)}
+                    Please verify your Email to access the arena and battle in real time.
+                    <button className='ml-2 text-sm text-blue-400 font-semibold bg-red-600 w-full py-3  rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2' onClick={() => navigate(`/verify-email`)}
                 >
                   Verify Now!!!
                   </button>

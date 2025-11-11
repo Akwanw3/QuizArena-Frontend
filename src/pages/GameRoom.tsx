@@ -451,7 +451,7 @@ const GameRoom = () => {
 
               {/* Action Buttons */}
               <div className="glass rounded-2xl p-6 border border-white/20 space-y-3">
-                { (
+                {!isHost&&(
                   <button
                     onClick={handleToggleReady}
                     className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
@@ -477,7 +477,7 @@ const GameRoom = () => {
                 {isHost && (
                   <button
                     onClick={handleStartGame}
-                    disabled={!allPlayersReady || currentRoom.players.length < 1}
+                    disabled={!allPlayersReady || currentRoom.players.length < 2}
                     className="w-full py-4 bg-gradient-to-r from-primary-500 via-purple-600 to-pink-500 text-white font-bold text-lg rounded-xl shadow-2xl hover:shadow-primary-500/50 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                   >
                     <Play className="w-6 h-6" />
